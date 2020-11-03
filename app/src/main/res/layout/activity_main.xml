@@ -32,12 +32,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <com.google.android.material.button.MaterialButton
+        <ImageButton
             android:layout_width="wrap_content"
             android:id="@+id/search"
             android:text="Search"
-            android:layout_marginRight="20dp"
-            android:layout_gravity="right"
+            android:background="@drawable/rounded"
+            android:src="@drawable/mic_foreground"
+            android:layout_gravity="center"
             android:layout_height="wrap_content"/>
     </FrameLayout>
         <TextView
