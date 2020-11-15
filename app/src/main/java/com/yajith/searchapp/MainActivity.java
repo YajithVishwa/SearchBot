@@ -13,6 +13,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.icu.lang.UCharacter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +48,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
     private ProgressDialog progressDialog;
     private EditText editText;
-    private String responseMessage,result,finaltext="";
+    private String responseMessage,result,finaltext="",link="";
     private Integer responseCode;
     private SpeechRecognizer speechRecognizer;
     private TextToSpeech textToSpeech;
@@ -130,7 +132,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     }
                     b[1]=b[1].trim();
                     Intent intent=new Intent(Intent.ACTION_WEB_SEARCH);
-                    intent.putExtra(SearchManager.QUERY,b[1].toString());
+                    if(link.equals(""))
+                    {
+                        textToSpeech.speak("Not Found",TextToSpeech.QUEUE_FLUSH,null);
+                    }
+                    else {
+                        intent.putExtra(SearchManager.QUERY, link);
+                    }
                     startActivity(intent);
                 }
                 else
@@ -216,18 +224,39 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             textView.setMovementMethod(new ScrollingMovementMethod());
             try {
                 textToSpeech.speak("This came back from search",TextToSpeech.QUEUE_FLUSH,null);
+                textView.setText("");
                 JSONObject jsonObject=new JSONObject(s);
                 JSONArray jsonArray=jsonObject.getJSONArray("items");
                 JSONObject jsonObject1=jsonArray.getJSONObject(0);
                 finaltext="Title- "+jsonObject1.getString("title")+"\n";
+                link=jsonObject1.getString("link");
                 finaltext+="Link- "+jsonObject1.getString("link")+"\n";
                 finaltext+="Description- "+jsonObject1.getString("snippet")+"\n";
+                textToSpeech.speak("Title-"+jsonObject1.getString("title"),TextToSpeech.QUEUE_FLUSH,null);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                textToSpeech.speak("Link-"+jsonObject1.getString("link"),TextToSpeech.QUEUE_FLUSH,null);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                textToSpeech.speak("Description-"+jsonObject1.getString("snippet"),TextToSpeech.QUEUE_FLUSH,null);
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 progressDialog.dismiss();
                 textView.setText(finaltext);
             } catch (JSONException e) {
                 e.printStackTrace();
                 progressDialog.dismiss();
                 textToSpeech.speak("No results Found",TextToSpeech.QUEUE_FLUSH,null);
+                textView.setText("No Result Found");
             }
         }
     }
@@ -246,12 +275,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     @Override
-    protected void onPause() {
+    protected void onDestroy() {
         if(textToSpeech!=null)
         {
             textToSpeech.stop();
             textToSpeech.shutdown();
         }
-        super.onPause();
+        super.onDestroy();
     }
 }
